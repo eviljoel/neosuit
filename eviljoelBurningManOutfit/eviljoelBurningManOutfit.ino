@@ -1,18 +1,20 @@
-# eviljoelBurningManOutfit - Code for my 2016 Burning Man outfit.
-# Copyright (C) 2016 Joel Luellwitz
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as
-# published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+/*
+eviljoelBurningManOutfit - Code for my 2016 Burning Man outfit.
+Copyright (C) 2016 Joel Luellwitz
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #include <Adafruit_NeoPixel.h>
 
@@ -102,11 +104,6 @@ uint8_t ventState;
 unsigned long ventFadeStartTime;
 unsigned long ventFadeEndTime;
 
-typedef struct FrontFacingPixel {
-    double rank;
-    uint16_t index;
-} FrontFacingPixel2;
-
 uint8_t gridAlertPixelCount;
 unsigned long gridAlertStartTime;
 unsigned long gridAlertEndTime;
@@ -114,7 +111,8 @@ FrontFacingPixel gridAlertPixelIndexes[GRID_FRONT_FACING_PIXEL_COUNT];
 uint8_t gridNearWhitePixelCount;
 unsigned long gridNearWhiteStartTime;
 unsigned long gridNearWhiteEndTime;
-FrontFacingPixel gridNearWhitePixelIndexes[GRID_FRONT_FACING_PIXEL_COUNT];
+uint16_t gridNearWhitePixelRanks[GRID_FRONT_FACING_PIXEL_COUNT];
+uint16_t gridNearWhitePixelIndexes[GRID_FRONT_FACING_PIXEL_COUNT];
 
 double randomDouble() {
     return (random(-9223372036854775808, 9223372036854775807) + 9223372036854775808.0) / 18446744073709551615.0;
@@ -292,16 +290,19 @@ void shimmerRemainingPixels(boolean pixelsUsed[]) {
 /*
  * Sorts the front facing pixels to assist with front facing pixel randomization.
  */
-void swapSort(FrontFacingPixel array[]) {
+void swapSort(uint16_t indexArray[], double rankArray[]) {
     
     boolean done = false;  // flag to know when we're done sorting              
     while(done == false) {  // simple swap sort, sorts numbers from lowest to highest
         done = true;
         for (uint16_t index = 0; index < (GRID_FRONT_FACING_PIXEL_COUNT - 2); index++) {
-            if (array[index].rank > array[index + 1].rank) {  // numbers are out of order - swap
-                FrontFacingPixel swap = array[index + 1];
-                array[index + 1] = array[index];
-                array[index] = swap;
+            if (rankArray[index] > rankArray[index + 1]) {  // numbers are out of order - swap
+                uint16_t swapIndex = indexArray[index + 1];
+                double swapRank = rankArray[index + 1];
+                indexArray[index + 1] = indexArray[index];
+                rankArray[index + 1] = rankArray[index];
+                indexArray[index] = swapIndex;
+                rankArray[index] = swapRank;
                 done = false;
             }
         }
@@ -323,13 +324,11 @@ void determineNextGridAlert(unsigned long currentFrameTime) {
     gridAlertEndTime = gridAlertStartTime + GRID_ALERT_DURATION;
 
     for (uint8_t frontFacingPixelIndex = 0; frontFacingPixelIndex < GRID_FRONT_FACING_PIXEL_COUNT; frontFacingPixelIndex++) {
-        FrontFacingPixel rankedPixelIndex = FrontFacingPixel();
-        rankedPixelIndex.rank = randomDouble();
-        rankedPixelIndex.index = GRID_FRONT_FACING_PIXELS[frontFacingPixelIndex];
-        gridAlertPixelIndexes[frontFacingPixelIndex] = rankedPixelIndex;
+        gridAlertPixelRanks[frontFacingPixelIndex] = randomDouble();
+        gridAlertPixelIndexes[frontFacingPixelIndex] = GRID_FRONT_FACING_PIXELS[frontFacingPixelIndex];
     }
 
-    swapSort(gridAlertPixelIndexes);
+    swapSort(gridAlertPixelIndexes, gridAlertPixelRanks);
 }
 
 /*
@@ -349,13 +348,11 @@ void determineNextGridNearWhite(unsigned long currentFrameTime) {
         (gridNearWhitePixelCount - 1) * GRID_NEAR_WHITE_MULTIPLE_SEPARATION;
 
     for (uint8_t frontFacingPixelIndex = 0; frontFacingPixelIndex < GRID_FRONT_FACING_PIXEL_COUNT; frontFacingPixelIndex++) {
-        FrontFacingPixel rankedPixelIndex = FrontFacingPixel();
-        rankedPixelIndex.rank = randomDouble();
-        rankedPixelIndex.index = GRID_FRONT_FACING_PIXELS[frontFacingPixelIndex];
-        gridNearWhitePixelIndexes[frontFacingPixelIndex] = rankedPixelIndex;
+        gridNearWhitePixelRanks[frontFacingPixelIndex] = randomDouble();
+        gridNearWhitePixelIndexes[frontFacingPixelIndex] = GRID_FRONT_FACING_PIXELS[frontFacingPixelIndex];
     }
 
-    swapSort(gridNearWhitePixelIndexes);
+    swapSort(gridNearWhitePixelIndexes, gridNearWhitePixelRanks);
 }
 
 /*

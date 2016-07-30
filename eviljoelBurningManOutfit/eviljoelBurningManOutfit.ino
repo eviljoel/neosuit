@@ -111,10 +111,15 @@ uint16_t gridAlertPixelIndexes[GRID_FRONT_FACING_PIXEL_COUNT];
 uint8_t gridNearWhitePixelCount;
 unsigned long gridNearWhiteStartTime;
 unsigned long gridNearWhiteEndTime;
+<<<<<<< HEAD
 double gridNearWhitePixelRanks[GRID_FRONT_FACING_PIXEL_COUNT];
 uint16_t gridNearWhitePixelIndexes[GRID_FRONT_FACING_PIXEL_COUNT];
 
 long max = 0;
+=======
+uint16_t gridNearWhitePixelRanks[GRID_FRONT_FACING_PIXEL_COUNT];
+uint16_t gridNearWhitePixelIndexes[GRID_FRONT_FACING_PIXEL_COUNT];
+>>>>>>> 40511f4afc721075d30ad599a2d654cf7c7a12a3
 
 double randomDouble() {
     double randomNumber = random(0, 1569324981) / 1569324981.0;     

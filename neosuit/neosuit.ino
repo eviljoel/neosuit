@@ -1,5 +1,5 @@
 /*
-eviljoelBurningManOutfit - Code for my 2016 Burning Man outfit.
+neosuit - Code for my 2016 Burning Man outfit.
 Copyright (C) 2016 Joel Luellwitz
 
 This program is free software: you can redistribute it and/or modify
@@ -33,8 +33,8 @@ const uint16_t PIXEL_COUNT_ALL = (PIXEL_COUNT_SHOULDER_INNER * 2) +
 Adafruit_NeoPixel neoPixelStrip0 = Adafruit_NeoPixel(PIXEL_COUNT_ALL, PIN_STRIP_0, NEO_GRB + NEO_KHZ800);
 
 // Base color
-const uint8_t COLOR_BASE_RED = 32;//255;
-const uint8_t COLOR_BASE_GREEN = 8;//61;
+const uint8_t COLOR_BASE_RED = 8;// 32;//255;
+const uint8_t COLOR_BASE_GREEN = 32;// 8;//61;
 const uint8_t COLOR_BASE_BLUE = 32;//255;
 const uint32_t COLOR_BASE = neoPixelStrip0.Color(COLOR_BASE_RED, COLOR_BASE_GREEN, COLOR_BASE_BLUE);  // Pink
 
@@ -111,15 +111,8 @@ uint16_t gridAlertPixelIndexes[GRID_FRONT_FACING_PIXEL_COUNT];
 uint8_t gridNearWhitePixelCount;
 unsigned long gridNearWhiteStartTime;
 unsigned long gridNearWhiteEndTime;
-<<<<<<< HEAD
 double gridNearWhitePixelRanks[GRID_FRONT_FACING_PIXEL_COUNT];
 uint16_t gridNearWhitePixelIndexes[GRID_FRONT_FACING_PIXEL_COUNT];
-
-long max = 0;
-=======
-uint16_t gridNearWhitePixelRanks[GRID_FRONT_FACING_PIXEL_COUNT];
-uint16_t gridNearWhitePixelIndexes[GRID_FRONT_FACING_PIXEL_COUNT];
->>>>>>> 40511f4afc721075d30ad599a2d654cf7c7a12a3
 
 double randomDouble() {
     double randomNumber = random(0, 1569324981) / 1569324981.0;     

@@ -32,14 +32,14 @@ const uint16_t PIXEL_COUNT_ALL = (PIXEL_COUNT_SHOULDER_INNER * 2) +
 
 Adafruit_NeoPixel neoPixelStrip0 = Adafruit_NeoPixel(PIXEL_COUNT_ALL, PIN_STRIP_0, NEO_GRB + NEO_KHZ800);
 
-// Base color
-const uint8_t COLOR_BASE_RED = 8;// 32;//255;
-const uint8_t COLOR_BASE_GREEN = 32;// 8;//61;
-const uint8_t COLOR_BASE_BLUE = 32;//255;
-const uint32_t COLOR_BASE = neoPixelStrip0.Color(COLOR_BASE_RED, COLOR_BASE_GREEN, COLOR_BASE_BLUE);  // Pink
+// Base color (Pink for now. Originally r255, g061, b255 but divided by 8.)
+const uint8_t COLOR_BASE_RED = 8;// 32;
+const uint8_t COLOR_BASE_GREEN = 32;// 8;
+const uint8_t COLOR_BASE_BLUE = 32;
+const uint32_t COLOR_BASE = neoPixelStrip0.Color(COLOR_BASE_RED, COLOR_BASE_GREEN, COLOR_BASE_BLUE);
 
 // Alert color
-const uint32_t COLOR_ALERT = neoPixelStrip0.Color(0, 0, 255); //neoPixelStrip0.Color(0, 102, 255);  // Blue
+const uint32_t COLOR_ALERT = neoPixelStrip0.Color(255, 0, 0);  // Green
 
 // Black
 const uint32_t COLOR_BLACK = neoPixelStrip0.Color(0, 0, 0);
@@ -48,13 +48,13 @@ const double VENT_STATE_FADE_FREQUENTLY_CHANCE = .25;
 const double VENT_STATE_FADE_ONCE_CHANCE = .75;
 
 const uint8_t GRID_FRONT_FACING_PIXEL_COUNT = 3;
-const uint16_t GRID_FRONT_FACING_PIXELS[] = {0, 4, 7};  //{5, 10, 15};
+const uint16_t GRID_FRONT_FACING_PIXELS[] = {0, 4, 7};
 
 const double GRID_ALERT_ONE_PIXEL_CHANCE = .70;
 const double GRID_ALERT_MULTIPLE_PIXELS_CHANCE = .30;
 const uint8_t GRID_ALERT_MULTIPLE_PIXEL_COUNT = 3;
-const unsigned long GRID_ALERT_MIN_DELAY = 0; //180000;  // 3 min
-const unsigned long GRID_ALERT_MAX_DELAY = 150000; //720000;  // 12 min max delay plus min delay.
+const unsigned long GRID_ALERT_MIN_DELAY = 180000;  // 3 min
+const unsigned long GRID_ALERT_MAX_DELAY = 540000;  // 9 min max delay plus min delay.
 const unsigned long GRID_ALERT_BLINK_HALF_PERIOD = 500;  // Time in milliseconds
 const unsigned long GRID_ALERT_DURATION = 60000;
 
@@ -76,15 +76,15 @@ const unsigned long VENT_STATE_FADE_MAX_DELAY = 360000;  // 6 min tops plus the 
 const unsigned long VENT_CYCLE_TIME = 4000;  // Time in milliseconds
 const uint8_t VENT_CYCLE_FREQUENTLY_COUNT = 8;
 
-const uint16_t INDEX_VENT_LEFT_START = 20;  // 6 Pixels
-const uint16_t INDEX_VENT_RIGHT_START = 26;  // 6 Pixels
-const uint16_t INDEX_STUD_LEFT_START = 32;  // 4 Pixels
-const uint16_t INDEX_STUD_RIGHT_START = 36;  // 4 Pixels
-const uint16_t INDEX_SHOULDER_INNER_LEFT_START = 40;  // 10 Pixels
-const uint16_t INDEX_SHOULDER_OUTER_LEFT_START = 50;  // 14 Pixels
-const uint16_t INDEX_SHOULDER_INNER_RIGHT_START = 64;  // 10 Pixels
-const uint16_t INDEX_SHOULDER_OUTER_RIGHT_START = 74;  // 14 Pixels
-const uint16_t INDEX_GRID_START = 0;  // 20 Pixels
+const uint16_t INDEX_VENT_LEFT_START = 82;  // 6 Pixels
+const uint16_t INDEX_VENT_RIGHT_START = 76;  // 6 Pixels
+const uint16_t INDEX_STUD_LEFT_START = 72;  // 4 Pixels
+const uint16_t INDEX_STUD_RIGHT_START = 68;  // 4 Pixels
+const uint16_t INDEX_SHOULDER_INNER_LEFT_START = 58;  // 10 Pixels
+const uint16_t INDEX_SHOULDER_OUTER_LEFT_START = 44;  // 14 Pixels
+const uint16_t INDEX_SHOULDER_INNER_RIGHT_START = 34;  // 10 Pixels
+const uint16_t INDEX_SHOULDER_OUTER_RIGHT_START = 0;  // 14 Pixels
+const uint16_t INDEX_GRID_START = 14;  // 20 Pixels
 
 const uint8_t ZONE_VENT_LEFT = 2;
 const uint8_t ZONE_VENT_RIGHT = 3;
@@ -207,13 +207,9 @@ void turnVentsOnAndCalculateNextFadeTime(unsigned long currentFrameTime) {
 
     // Determine the next type of vent fade.
     if (VENT_STATE_FADE_FREQUENTLY_CHANCE < randomDouble()) {
-        Serial.print("VENT_STATE_FADE_FREQUENTLY: ");
-        Serial.println(ventFadeStartTime);
         ventFadeEndTime = ventFadeStartTime + VENT_CYCLE_TIME;
     }
     else {
-        Serial.print("VENT_STATE_FADE_ONCE: ");
-        Serial.println(ventFadeStartTime);
         ventFadeEndTime = ventFadeStartTime + (VENT_CYCLE_TIME * VENT_CYCLE_FREQUENTLY_COUNT);
     }
 }
@@ -243,7 +239,7 @@ void animateSholders(unsigned long currentFrameTime) {
 }
 
 /*
- * Animates either the inner or outer shoulder LED string. TODO:
+ * Animates either the inner or outer shoulder LED string.
  */
 void animateShouldersSubZone(uint8_t leftZone, uint8_t rightZone, unsigned long currentFrameTime, uint16_t pixelCount) {
 
@@ -299,7 +295,7 @@ void swapSort(uint16_t indexArray[], double rankArray[]) {
     boolean done = false;  // flag to know when we're done sorting              
     while(done == false) {  // simple swap sort, sorts numbers from lowest to highest
         done = true;
-        for (uint16_t index = 0; index < (GRID_FRONT_FACING_PIXEL_COUNT - 2); index++) {
+        for (uint16_t index = 0; index < (GRID_FRONT_FACING_PIXEL_COUNT - 1); index++) {
             if (rankArray[index] > rankArray[index + 1]) {  // numbers are out of order - swap
                 uint16_t swapIndex = indexArray[index + 1];
                 double swapRank = rankArray[index + 1];
@@ -326,9 +322,6 @@ void determineNextGridAlert(unsigned long currentFrameTime) {
 
     gridAlertStartTime = currentFrameTime + GRID_ALERT_MIN_DELAY + randomDouble() * GRID_ALERT_MAX_DELAY;
     gridAlertEndTime = gridAlertStartTime + GRID_ALERT_DURATION;
-    
-    Serial.print("gridAlertStartTime: ");
-    Serial.println(gridAlertStartTime);
 
     for (uint8_t frontFacingPixelIndex = 0; frontFacingPixelIndex < GRID_FRONT_FACING_PIXEL_COUNT; frontFacingPixelIndex++) {
         gridAlertPixelRanks[frontFacingPixelIndex] = randomDouble();
@@ -372,6 +365,11 @@ void animateGrid(unsigned long currentFrameTime) {
     for (uint16_t pixelsUsedIndex = 0; pixelsUsedIndex < PIXEL_COUNT_GRID; pixelsUsedIndex++) {
         pixelsUsed[pixelsUsedIndex] = false;
     }
+    
+    boolean frontFacingIndexesUsed[GRID_FRONT_FACING_PIXEL_COUNT];
+    for (uint16_t frontFacingPixelIndex = 0; frontFacingPixelIndex < GRID_FRONT_FACING_PIXEL_COUNT; frontFacingPixelIndex++) {
+        frontFacingIndexesUsed[frontFacingPixelIndex] = false;
+    }
 
     // Three point alert color or one point alert color.
     if (currentFrameTime >= gridAlertStartTime) {
@@ -379,13 +377,11 @@ void animateGrid(unsigned long currentFrameTime) {
         if (currentFrameTime < gridAlertEndTime) {
 
             for (uint8_t alertPixelIndex = 0; alertPixelIndex < gridAlertPixelCount; alertPixelIndex++) {
+                frontFacingIndexesUsed[alertPixelIndex] = true;
             
                 uint16_t gridPixelIndex = gridAlertPixelIndexes[alertPixelIndex];
                 
                 unsigned long timeInPeriod = (currentFrameTime - gridAlertStartTime) % (2 * GRID_ALERT_BLINK_HALF_PERIOD);
-
-                Serial.print("alert timeInPeriod: ");
-                Serial.println(timeInPeriod);
 
                 if (pixelsUsed[gridPixelIndex] == false &&
                         ((alertPixelIndex == 0 && timeInPeriod < GRID_ALERT_BLINK_HALF_PERIOD) ||
@@ -411,7 +407,7 @@ void animateGrid(unsigned long currentFrameTime) {
             
                 uint16_t gridPixelIndex = gridNearWhitePixelIndexes[nearWhitePixelIndex];
             
-                if (pixelsUsed[gridPixelIndex] == false &&
+                if (pixelsUsed[gridPixelIndex] == false && frontFacingIndexesUsed[nearWhitePixelIndex] == false &&
                          gridNearWhiteStartTime + GRID_NEAR_WHITE_MULTIPLE_SEPARATION * nearWhitePixelIndex < currentFrameTime && 
                          currentFrameTime < gridNearWhiteStartTime + GRID_NEAR_WHITE_FLASH_DURATION + 
                              GRID_NEAR_WHITE_MULTIPLE_SEPARATION * nearWhitePixelIndex) {
@@ -469,7 +465,7 @@ void initializeStuds() {
  * Initializes the program.
  */
 void setup() {
-    Serial.begin(9600);
+    //Serial.begin(9600);  // TODO: Find a faster baud?
     neoPixelStrip0.begin();
 
     unsigned long currentFrameTime = millis();

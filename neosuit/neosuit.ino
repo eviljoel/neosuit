@@ -29,14 +29,10 @@ const uint16_t PIXEL_COUNT_GRID = 20;
 const uint16_t PIXEL_COUNT_VENT = 18;
 const uint16_t PIXEL_COUNT_STUD = 4;
 
-const uint16_t PIXEL_COUNT_ALL = (PIXEL_COUNT_SHOULDER_INNER * 2) +
-    (PIXEL_COUNT_SHOULDER_OUTER * 2) + PIXEL_COUNT_GRID +
-    (PIXEL_COUNT_VENT * 2) + (PIXEL_COUNT_STUD * 2);
-
-Adafruit_NeoPixel neoPixelStripStud = Adafruit_NeoPixel(PIXEL_COUNT_STUD * 2, PIN_STRIP_STUD, NEO_RGB + NEO_KHZ800);
-Adafruit_NeoPixel neoPixelStripVent = Adafruit_NeoPixel(PIXEL_COUNT_VENT * 2, PIN_STRIP_VENT, NEO_RGB + NEO_KHZ800);
+Adafruit_NeoPixel neoPixelStripStud = Adafruit_NeoPixel(PIXEL_COUNT_STUD, PIN_STRIP_STUD, NEO_RGB + NEO_KHZ800);
+Adafruit_NeoPixel neoPixelStripVent = Adafruit_NeoPixel(PIXEL_COUNT_VENT, PIN_STRIP_VENT, NEO_RGB + NEO_KHZ800);
 Adafruit_NeoPixel neoPixelStripGrid = Adafruit_NeoPixel(PIXEL_COUNT_GRID, PIN_STRIP_GRID, NEO_RGB + NEO_KHZ800);
-Adafruit_NeoPixel neoPixelStripShoulder = Adafruit_NeoPixel(PIXEL_COUNT_SHOULDER_INNER * 2 + PIXEL_COUNT_SHOULDER_OUTER * 2, PIN_STRIP_SHOULDER, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel neoPixelStripShoulder = Adafruit_NeoPixel(PIXEL_COUNT_SHOULDER_INNER + PIXEL_COUNT_SHOULDER_OUTER, PIN_STRIP_SHOULDER, NEO_GRB + NEO_KHZ800);
 
 // Base color (Pink for now. Originally r255, g061, b255 but divided by 8.)
 const uint8_t COLOR_BASE_RED = 32;
@@ -82,24 +78,16 @@ const unsigned long VENT_STATE_FADE_MAX_DELAY = 360000;  // 6 min tops plus the 
 const unsigned long VENT_CYCLE_TIME = 4000;  // Time in milliseconds
 const uint8_t VENT_CYCLE_FREQUENTLY_COUNT = 8;
 
-const uint16_t INDEX_VENT_LEFT_START = 18;  // 18 Pixels
-const uint16_t INDEX_VENT_RIGHT_START = 0;  // 18 Pixels
-const uint16_t INDEX_STUD_LEFT_START = 4;  // 4 Pixels
-const uint16_t INDEX_STUD_RIGHT_START = 0;  // 4 Pixels
-const uint16_t INDEX_SHOULDER_INNER_LEFT_START = 51;  // 13 Pixels
-const uint16_t INDEX_SHOULDER_OUTER_LEFT_START = 32;  // 19 Pixels
-const uint16_t INDEX_SHOULDER_INNER_RIGHT_START = 19;  // 13 Pixels
-const uint16_t INDEX_SHOULDER_OUTER_RIGHT_START = 0;  // 19 Pixels
+const uint16_t INDEX_VENT_START = 0;  // 18 Pixels
+const uint16_t INDEX_STUD_START = 0;  // 4 Pixels
+const uint16_t INDEX_SHOULDER_INNER_START = 0;  // 13 Pixels
+const uint16_t INDEX_SHOULDER_OUTER_START = 13;  // 19 Pixels
 const uint16_t INDEX_GRID_START = 0;  // 20 Pixels
 
-const uint8_t ZONE_VENT_LEFT = 2;
-const uint8_t ZONE_VENT_RIGHT = 3;
-const uint8_t ZONE_STUD_LEFT = 4;
-const uint8_t ZONE_STUD_RIGHT = 5;
-const uint8_t ZONE_SHOULDER_INNER_LEFT = 6;
-const uint8_t ZONE_SHOULDER_OUTER_LEFT = 7;
-const uint8_t ZONE_SHOULDER_INNER_RIGHT = 8;
-const uint8_t ZONE_SHOULDER_OUTER_RIGHT = 9;
+const uint8_t ZONE_VENT = 2;
+const uint8_t ZONE_STUD = 4;
+const uint8_t ZONE_SHOULDER_INNER = 6;
+const uint8_t ZONE_SHOULDER_OUTER = 7;
 const uint8_t ZONE_GRID = 10;
 
 const uint8_t VENT_STATE_ON = 100;
@@ -129,29 +117,17 @@ uint16_t getZoneOffset(uint8_t zone) {
 
     uint16_t zoneOffset;
   
-    if (zone == ZONE_VENT_LEFT) {
-        zoneOffset = INDEX_VENT_LEFT_START;
+    if (zone == ZONE_VENT) {
+        zoneOffset = INDEX_VENT_START;
     }
-    else if (zone == ZONE_VENT_RIGHT) {
-        zoneOffset = INDEX_VENT_RIGHT_START;
+    else if (zone == ZONE_STUD) {
+        zoneOffset = INDEX_STUD_START;
     }
-    else if (zone == ZONE_STUD_LEFT) {
-        zoneOffset = INDEX_STUD_LEFT_START;
+    else if (zone == ZONE_SHOULDER_INNER) {
+        zoneOffset = INDEX_SHOULDER_INNER_START;
     }
-    else if (zone == ZONE_STUD_RIGHT) {
-        zoneOffset = INDEX_STUD_RIGHT_START;
-    }
-    else if (zone == ZONE_SHOULDER_INNER_LEFT) {
-        zoneOffset = INDEX_SHOULDER_INNER_LEFT_START;
-    }
-    else if (zone == ZONE_SHOULDER_OUTER_LEFT) {
-        zoneOffset = INDEX_SHOULDER_OUTER_LEFT_START;
-    }
-    else if (zone == ZONE_SHOULDER_INNER_RIGHT) {
-        zoneOffset = INDEX_SHOULDER_INNER_RIGHT_START;
-    }
-    else if (zone == ZONE_SHOULDER_OUTER_RIGHT) {
-        zoneOffset = INDEX_SHOULDER_OUTER_RIGHT_START;
+    else if (zone == ZONE_SHOULDER_OUTER) {
+        zoneOffset = INDEX_SHOULDER_OUTER_START;
     }
     else if (zone == ZONE_GRID) {
         zoneOffset = INDEX_GRID_START;
@@ -176,10 +152,10 @@ uint32_t getColor(uint8_t zone, uint16_t pixelIndex) {
     uint16_t pixelOffset = getZoneOffset(zone) + pixelIndex;
     uint32_t color;
     
-    if (zone == ZONE_STUD_LEFT || zone == ZONE_STUD_RIGHT) {
+    if (zone == ZONE_STUD) {
         color = neoPixelStripStud.getPixelColor(pixelOffset);
     }
-    else if (zone == ZONE_VENT_LEFT || zone == ZONE_VENT_RIGHT) {
+    else if (zone == ZONE_VENT) {
         color = neoPixelStripVent.getPixelColor(pixelOffset);
     }
     else if (zone == ZONE_GRID) {
@@ -195,10 +171,10 @@ uint32_t getColor(uint8_t zone, uint16_t pixelIndex) {
 void setColor(uint8_t zone, uint16_t pixelIndex, uint32_t color) {
     uint16_t pixelOffset = getZoneOffset(zone) + pixelIndex;
     
-    if (zone == ZONE_STUD_LEFT || zone == ZONE_STUD_RIGHT) {
+    if (zone == ZONE_STUD) {
         neoPixelStripStud.setPixelColor(pixelOffset, color);
     }
-    else if (zone == ZONE_VENT_LEFT || zone == ZONE_VENT_RIGHT) {
+    else if (zone == ZONE_VENT) {
         neoPixelStripVent.setPixelColor(pixelOffset, color);
     }
     else if (zone == ZONE_GRID) {
@@ -259,22 +235,21 @@ void setFadedColor(uint8_t zone, uint16_t pixelIndex, uint32_t color, double amo
 
 void setVentsFade(double fadeAmount) {
     for (uint16_t pixelIndex = 0; pixelIndex < PIXEL_COUNT_VENT; pixelIndex++) {
-        setFadedColor(ZONE_VENT_LEFT, pixelIndex, COLOR_BASE, fadeAmount);
-        setFadedColor(ZONE_VENT_RIGHT, pixelIndex, COLOR_BASE, fadeAmount);
+        setFadedColor(ZONE_VENT, pixelIndex, COLOR_BASE, fadeAmount);
     } 
 }
 
 void animateSholders(unsigned long currentFrameTime) {
-    // Animate inner strips
-    animateShouldersSubZone(ZONE_SHOULDER_INNER_LEFT, ZONE_SHOULDER_INNER_RIGHT, currentFrameTime, PIXEL_COUNT_SHOULDER_INNER);
-    // Animate outer strips
-    animateShouldersSubZone(ZONE_SHOULDER_OUTER_LEFT, ZONE_SHOULDER_OUTER_RIGHT, currentFrameTime, PIXEL_COUNT_SHOULDER_OUTER);
+    // Animate inner strip
+    animateShouldersSubZone(ZONE_SHOULDER_INNER, currentFrameTime, PIXEL_COUNT_SHOULDER_INNER);
+    // Animate outer strip
+    animateShouldersSubZone(ZONE_SHOULDER_OUTER, currentFrameTime, PIXEL_COUNT_SHOULDER_OUTER);
 }
 
 /*
  * Animates either the inner or outer shoulder LED string.
  */
-void animateShouldersSubZone(uint8_t leftZone, uint8_t rightZone, unsigned long currentFrameTime, uint16_t pixelCount) {
+void animateShouldersSubZone(uint8_t zone, unsigned long currentFrameTime, uint16_t pixelCount) {
 
     const double placeInCycle = (currentFrameTime % SHOULDER_CYCLE_TIME + 0.0) / SHOULDER_CYCLE_TIME * SHOULDER_LEAD_SEPARATION;
     const uint16_t firstFadedLight = uint16_t(placeInCycle);  
@@ -289,17 +264,14 @@ void animateShouldersSubZone(uint8_t leftZone, uint8_t rightZone, unsigned long 
         //   pixels.
         if (firstFadedLight + firstPixelOfSeparation == pixelIndex) {
             double amountOn = uint16_t(placeInCycle) + 1 - placeInCycle;
-            setFadedColor(leftZone, pixelIndex, COLOR_BASE, amountOn);
-            setFadedColor(rightZone, pixelIndex, COLOR_BASE, amountOn);
+            setFadedColor(zone, pixelIndex, COLOR_BASE, amountOn);
         }
         else if (secondFadedLight + firstPixelOfSeparation == pixelIndex) {
             double amountOn = placeInCycle - uint16_t(placeInCycle);
-            setFadedColor(leftZone, pixelIndex, COLOR_BASE, amountOn);
-            setFadedColor(rightZone, pixelIndex, COLOR_BASE, amountOn);
+            setFadedColor(zone, pixelIndex, COLOR_BASE, amountOn);
         }
         else {
-            setColor(leftZone, pixelIndex, COLOR_BLACK);
-            setColor(rightZone, pixelIndex, COLOR_BLACK);
+            setColor(zone, pixelIndex, COLOR_BLACK);
         }
     }
 }
@@ -489,8 +461,7 @@ void initializeGrid(unsigned long currentFrameTime) {
 void initializeStuds() {
 
     for (uint16_t pixelIndex = 0; pixelIndex < PIXEL_COUNT_STUD; pixelIndex++) {
-        setColor(ZONE_STUD_LEFT, pixelIndex, COLOR_BASE);
-        setColor(ZONE_STUD_RIGHT, pixelIndex, COLOR_BASE);
+        setColor(ZONE_STUD, pixelIndex, COLOR_BASE);
     }
 }
 

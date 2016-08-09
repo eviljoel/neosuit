@@ -18,31 +18,37 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <Adafruit_NeoPixel.h>
 
-const uint8_t PIN_STRIP_0 = 6;
+const uint8_t PIN_STRIP_SHOULDER = 6;
+const uint8_t PIN_STRIP_GRID = 5;
+const uint8_t PIN_STRIP_VENT = 3;
+const uint8_t PIN_STRIP_STUD = 9;
 
-const uint16_t PIXEL_COUNT_SHOULDER_INNER = 10;
-const uint16_t PIXEL_COUNT_SHOULDER_OUTER = 14;
+const uint16_t PIXEL_COUNT_SHOULDER_INNER = 13;
+const uint16_t PIXEL_COUNT_SHOULDER_OUTER = 19;
 const uint16_t PIXEL_COUNT_GRID = 20;
-const uint16_t PIXEL_COUNT_VENT = 6;
+const uint16_t PIXEL_COUNT_VENT = 18;
 const uint16_t PIXEL_COUNT_STUD = 4;
 
 const uint16_t PIXEL_COUNT_ALL = (PIXEL_COUNT_SHOULDER_INNER * 2) +
     (PIXEL_COUNT_SHOULDER_OUTER * 2) + PIXEL_COUNT_GRID +
     (PIXEL_COUNT_VENT * 2) + (PIXEL_COUNT_STUD * 2);
 
-Adafruit_NeoPixel neoPixelStrip0 = Adafruit_NeoPixel(PIXEL_COUNT_ALL, PIN_STRIP_0, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel neoPixelStripStud = Adafruit_NeoPixel(PIXEL_COUNT_STUD * 2, PIN_STRIP_STUD, NEO_RGB + NEO_KHZ800);
+Adafruit_NeoPixel neoPixelStripVent = Adafruit_NeoPixel(PIXEL_COUNT_VENT * 2, PIN_STRIP_VENT, NEO_RGB + NEO_KHZ800);
+Adafruit_NeoPixel neoPixelStripGrid = Adafruit_NeoPixel(PIXEL_COUNT_GRID, PIN_STRIP_GRID, NEO_RGB + NEO_KHZ800);
+Adafruit_NeoPixel neoPixelStripShoulder = Adafruit_NeoPixel(PIXEL_COUNT_SHOULDER_INNER * 2 + PIXEL_COUNT_SHOULDER_OUTER * 2, PIN_STRIP_SHOULDER, NEO_GRB + NEO_KHZ800);
 
 // Base color (Pink for now. Originally r255, g061, b255 but divided by 8.)
-const uint8_t COLOR_BASE_RED = 8;// 32;
-const uint8_t COLOR_BASE_GREEN = 32;// 8;
+const uint8_t COLOR_BASE_RED = 32;
+const uint8_t COLOR_BASE_GREEN = 8;
 const uint8_t COLOR_BASE_BLUE = 32;
-const uint32_t COLOR_BASE = neoPixelStrip0.Color(COLOR_BASE_RED, COLOR_BASE_GREEN, COLOR_BASE_BLUE);
+const uint32_t COLOR_BASE = neoPixelStripGrid.Color(COLOR_BASE_RED, COLOR_BASE_GREEN, COLOR_BASE_BLUE);
 
 // Alert color
-const uint32_t COLOR_ALERT = neoPixelStrip0.Color(255, 0, 0);  // Green
+const uint32_t COLOR_ALERT = neoPixelStripGrid.Color(255, 0, 0);  // Green
 
 // Black
-const uint32_t COLOR_BLACK = neoPixelStrip0.Color(0, 0, 0);
+const uint32_t COLOR_BLACK = neoPixelStripGrid.Color(0, 0, 0);
 
 const double VENT_STATE_FADE_FREQUENTLY_CHANCE = .25;
 const double VENT_STATE_FADE_ONCE_CHANCE = .75;
@@ -76,15 +82,15 @@ const unsigned long VENT_STATE_FADE_MAX_DELAY = 360000;  // 6 min tops plus the 
 const unsigned long VENT_CYCLE_TIME = 4000;  // Time in milliseconds
 const uint8_t VENT_CYCLE_FREQUENTLY_COUNT = 8;
 
-const uint16_t INDEX_VENT_LEFT_START = 82;  // 6 Pixels
-const uint16_t INDEX_VENT_RIGHT_START = 76;  // 6 Pixels
-const uint16_t INDEX_STUD_LEFT_START = 72;  // 4 Pixels
-const uint16_t INDEX_STUD_RIGHT_START = 68;  // 4 Pixels
-const uint16_t INDEX_SHOULDER_INNER_LEFT_START = 58;  // 10 Pixels
-const uint16_t INDEX_SHOULDER_OUTER_LEFT_START = 44;  // 14 Pixels
-const uint16_t INDEX_SHOULDER_INNER_RIGHT_START = 34;  // 10 Pixels
-const uint16_t INDEX_SHOULDER_OUTER_RIGHT_START = 0;  // 14 Pixels
-const uint16_t INDEX_GRID_START = 14;  // 20 Pixels
+const uint16_t INDEX_VENT_LEFT_START = 18;  // 18 Pixels
+const uint16_t INDEX_VENT_RIGHT_START = 0;  // 18 Pixels
+const uint16_t INDEX_STUD_LEFT_START = 4;  // 4 Pixels
+const uint16_t INDEX_STUD_RIGHT_START = 0;  // 4 Pixels
+const uint16_t INDEX_SHOULDER_INNER_LEFT_START = 51;  // 13 Pixels
+const uint16_t INDEX_SHOULDER_OUTER_LEFT_START = 32;  // 19 Pixels
+const uint16_t INDEX_SHOULDER_INNER_RIGHT_START = 19;  // 13 Pixels
+const uint16_t INDEX_SHOULDER_OUTER_RIGHT_START = 0;  // 19 Pixels
+const uint16_t INDEX_GRID_START = 0;  // 20 Pixels
 
 const uint8_t ZONE_VENT_LEFT = 2;
 const uint8_t ZONE_VENT_RIGHT = 3;
@@ -168,12 +174,39 @@ uint8_t getBlueColor(uint32_t color) {
 
 uint32_t getColor(uint8_t zone, uint16_t pixelIndex) {
     uint16_t pixelOffset = getZoneOffset(zone) + pixelIndex;
-    return neoPixelStrip0.getPixelColor(pixelOffset);
+    uint32_t color;
+    
+    if (zone == ZONE_STUD_LEFT || zone == ZONE_STUD_RIGHT) {
+        color = neoPixelStripStud.getPixelColor(pixelOffset);
+    }
+    else if (zone == ZONE_VENT_LEFT || zone == ZONE_VENT_RIGHT) {
+        color = neoPixelStripVent.getPixelColor(pixelOffset);
+    }
+    else if (zone == ZONE_GRID) {
+        color = neoPixelStripGrid.getPixelColor(pixelOffset);
+    }
+    else {
+        color = neoPixelStripShoulder.getPixelColor(pixelOffset);
+    }
+    
+    return color;
 }
 
 void setColor(uint8_t zone, uint16_t pixelIndex, uint32_t color) {
     uint16_t pixelOffset = getZoneOffset(zone) + pixelIndex;
-    neoPixelStrip0.setPixelColor(pixelOffset, color);
+    
+    if (zone == ZONE_STUD_LEFT || zone == ZONE_STUD_RIGHT) {
+        neoPixelStripStud.setPixelColor(pixelOffset, color);
+    }
+    else if (zone == ZONE_VENT_LEFT || zone == ZONE_VENT_RIGHT) {
+        neoPixelStripVent.setPixelColor(pixelOffset, color);
+    }
+    else if (zone == ZONE_GRID) {
+        neoPixelStripGrid.setPixelColor(pixelOffset, color);
+    }
+    else {
+        neoPixelStripShoulder.setPixelColor(pixelOffset, color);
+    }
 }
 
 void animateVents(unsigned long currentFrameTime) {
@@ -219,7 +252,7 @@ void setFadedColor(uint8_t zone, uint16_t pixelIndex, uint32_t color, double amo
     const uint8_t fadedRed = uint8_t(getRedColor(color) * amountOn);
     const uint8_t fadedGreen = uint8_t(getGreenColor(color) * amountOn);
     const uint8_t fadedBlue = uint8_t(getBlueColor(color) * amountOn);
-    const uint32_t fadedColor = neoPixelStrip0.Color(fadedRed, fadedGreen, fadedBlue);    
+    const uint32_t fadedColor = neoPixelStripGrid.Color(fadedRed, fadedGreen, fadedBlue);    
 
     setColor(zone, pixelIndex, fadedColor);
 }
@@ -281,7 +314,7 @@ void shimmerRemainingPixels(boolean pixelsUsed[]) {
             uint8_t adjustedRed = uint8_t(min(max(COLOR_BASE_RED + (COLOR_BASE_RED * SHIMMER_COLOR_SHIFT_MULTIPLIER * randomDouble() * (randomDouble() * 2 - 1)), 0), 255));
             uint8_t adjustedGreen = uint8_t(min(max(COLOR_BASE_GREEN + (COLOR_BASE_GREEN * SHIMMER_COLOR_SHIFT_MULTIPLIER * randomDouble() * (randomDouble() * 2 - 1)), 0), 255));
             uint8_t adjustedBlue = uint8_t(min(max(COLOR_BASE_BLUE + (COLOR_BASE_BLUE * SHIMMER_COLOR_SHIFT_MULTIPLIER * randomDouble() * (randomDouble() * 2 - 1)), 0), 255));
-            uint32_t adjustedColor = neoPixelStrip0.Color(adjustedRed, adjustedGreen, adjustedBlue);
+            uint32_t adjustedColor = neoPixelStripGrid.Color(adjustedRed, adjustedGreen, adjustedBlue);
             setColor(ZONE_GRID, pixelIndex, adjustedColor);
         }
     }
@@ -417,7 +450,7 @@ void animateGrid(unsigned long currentFrameTime) {
                     uint8_t adjustedRed = (255 - COLOR_BASE_RED) * sin(adjustedTime * 1.0 / GRID_NEAR_WHITE_FLASH_DURATION * PI) + COLOR_BASE_RED;
                     uint8_t adjustedGreen = (255 - COLOR_BASE_GREEN) * sin(adjustedTime * 1.0 / GRID_NEAR_WHITE_FLASH_DURATION * PI) + COLOR_BASE_GREEN;
                     uint8_t adjustedBlue = (255 - COLOR_BASE_BLUE) * sin(adjustedTime * 1.0 / GRID_NEAR_WHITE_FLASH_DURATION * PI) + COLOR_BASE_BLUE;
-                    uint32_t adjustedColor = neoPixelStrip0.Color(adjustedRed, adjustedGreen, adjustedBlue);
+                    uint32_t adjustedColor = neoPixelStripGrid.Color(adjustedRed, adjustedGreen, adjustedBlue);
 
                     setColor(ZONE_GRID, gridPixelIndex, adjustedColor);
 
@@ -466,7 +499,10 @@ void initializeStuds() {
  */
 void setup() {
     //Serial.begin(9600);  // TODO: Find a faster baud?
-    neoPixelStrip0.begin();
+    neoPixelStripStud.begin();
+    neoPixelStripVent.begin();
+    neoPixelStripGrid.begin();
+    neoPixelStripShoulder.begin();
 
     unsigned long currentFrameTime = millis();
     
@@ -477,7 +513,10 @@ void setup() {
     initializeGrid(currentFrameTime);
     initializeStuds();
 
-    neoPixelStrip0.show();
+    neoPixelStripStud.show();
+    neoPixelStripVent.show();
+    neoPixelStripGrid.show();
+    neoPixelStripShoulder.show();
 }
 
 /*
@@ -491,5 +530,8 @@ void loop() {
     animateGrid(currentFrameTime);
     // FYI, studs never change.
 
-    neoPixelStrip0.show();
+    neoPixelStripStud.show();
+    neoPixelStripVent.show();
+    neoPixelStripGrid.show();
+    neoPixelStripShoulder.show();
 }

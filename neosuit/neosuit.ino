@@ -45,7 +45,7 @@ const uint8_t COLOR_BASE_BLUE = 32;
 const uint32_t COLOR_BASE = neoPixelStripGrid.Color(COLOR_BASE_RED, COLOR_BASE_GREEN, COLOR_BASE_BLUE);
 
 // Alert color
-const uint32_t COLOR_ALERT = neoPixelStripGrid.Color(255, 0, 0);  // Green
+const uint32_t COLOR_ALERT = neoPixelStripGrid.Color(0, 255, 0);  // Green
 
 // Black
 const uint32_t COLOR_BLACK = neoPixelStripGrid.Color(0, 0, 0);

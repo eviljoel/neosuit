@@ -18,10 +18,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <Adafruit_NeoPixel.h>
 
-const uint8_t PIN_STRIP_SHOULDER = 6;
-const uint8_t PIN_STRIP_GRID = 5;
-const uint8_t PIN_STRIP_VENT = 3;
-const uint8_t PIN_STRIP_STUD = 9;
+const uint8_t PIN_STRIP_SHOULDER_LEFT = 6;
+const uint8_t PIN_STRIP_SHOULDER_RIGHT = 11;
+const uint8_t PIN_STRIP_GRID = 9;
+const uint8_t PIN_STRIP_VENT_LEFT = 5;
+const uint8_t PIN_STRIP_VENT_RIGHT = 10;
 
 const uint16_t PIXEL_COUNT_SHOULDER_INNER = 13;
 const uint16_t PIXEL_COUNT_SHOULDER_OUTER = 19;
@@ -29,14 +30,11 @@ const uint16_t PIXEL_COUNT_GRID = 20;
 const uint16_t PIXEL_COUNT_VENT = 18;
 const uint16_t PIXEL_COUNT_STUD = 4;
 
-const uint16_t PIXEL_COUNT_ALL = (PIXEL_COUNT_SHOULDER_INNER * 2) +
-    (PIXEL_COUNT_SHOULDER_OUTER * 2) + PIXEL_COUNT_GRID +
-    (PIXEL_COUNT_VENT * 2) + (PIXEL_COUNT_STUD * 2);
-
-Adafruit_NeoPixel neoPixelStripStud = Adafruit_NeoPixel(PIXEL_COUNT_STUD * 2, PIN_STRIP_STUD, NEO_RGB + NEO_KHZ800);
-Adafruit_NeoPixel neoPixelStripVent = Adafruit_NeoPixel(PIXEL_COUNT_VENT * 2, PIN_STRIP_VENT, NEO_RGB + NEO_KHZ800);
 Adafruit_NeoPixel neoPixelStripGrid = Adafruit_NeoPixel(PIXEL_COUNT_GRID, PIN_STRIP_GRID, NEO_RGB + NEO_KHZ800);
-Adafruit_NeoPixel neoPixelStripShoulder = Adafruit_NeoPixel(PIXEL_COUNT_SHOULDER_INNER * 2 + PIXEL_COUNT_SHOULDER_OUTER * 2, PIN_STRIP_SHOULDER, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel neoPixelStripVentLeft = Adafruit_NeoPixel(PIXEL_COUNT_VENT + PIXEL_COUNT_STUD, PIN_STRIP_VENT_LEFT, NEO_RGB + NEO_KHZ800);
+Adafruit_NeoPixel neoPixelStripVentRight = Adafruit_NeoPixel(PIXEL_COUNT_VENT + PIXEL_COUNT_STUD, PIN_STRIP_VENT_RIGHT, NEO_RGB + NEO_KHZ800);
+Adafruit_NeoPixel neoPixelStripShoulderLeft = Adafruit_NeoPixel(PIXEL_COUNT_SHOULDER_INNER + PIXEL_COUNT_SHOULDER_OUTER, PIN_STRIP_SHOULDER_LEFT, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel neoPixelStripShoulderRight = Adafruit_NeoPixel(PIXEL_COUNT_SHOULDER_INNER + PIXEL_COUNT_SHOULDER_OUTER, PIN_STRIP_SHOULDER_RIGHT, NEO_GRB + NEO_KHZ800);
 
 // Base color (Pink for now. Originally r255, g061, b255 but divided by 8.)
 const uint8_t COLOR_BASE_RED = 32;
@@ -82,12 +80,12 @@ const unsigned long VENT_STATE_FADE_MAX_DELAY = 360000;  // 6 min tops plus the 
 const unsigned long VENT_CYCLE_TIME = 4000;  // Time in milliseconds
 const uint8_t VENT_CYCLE_FREQUENTLY_COUNT = 8;
 
-const uint16_t INDEX_VENT_LEFT_START = 18;  // 18 Pixels
+const uint16_t INDEX_VENT_LEFT_START = 0;  // 18 Pixels
 const uint16_t INDEX_VENT_RIGHT_START = 0;  // 18 Pixels
-const uint16_t INDEX_STUD_LEFT_START = 4;  // 4 Pixels
-const uint16_t INDEX_STUD_RIGHT_START = 0;  // 4 Pixels
-const uint16_t INDEX_SHOULDER_INNER_LEFT_START = 51;  // 13 Pixels
-const uint16_t INDEX_SHOULDER_OUTER_LEFT_START = 32;  // 19 Pixels
+const uint16_t INDEX_STUD_LEFT_START = 18;  // 4 Pixels
+const uint16_t INDEX_STUD_RIGHT_START = 18;  // 4 Pixels
+const uint16_t INDEX_SHOULDER_INNER_LEFT_START = 19;  // 13 Pixels
+const uint16_t INDEX_SHOULDER_OUTER_LEFT_START = 0;  // 19 Pixels
 const uint16_t INDEX_SHOULDER_INNER_RIGHT_START = 19;  // 13 Pixels
 const uint16_t INDEX_SHOULDER_OUTER_RIGHT_START = 0;  // 19 Pixels
 const uint16_t INDEX_GRID_START = 0;  // 20 Pixels
@@ -101,10 +99,6 @@ const uint8_t ZONE_SHOULDER_OUTER_LEFT = 7;
 const uint8_t ZONE_SHOULDER_INNER_RIGHT = 8;
 const uint8_t ZONE_SHOULDER_OUTER_RIGHT = 9;
 const uint8_t ZONE_GRID = 10;
-
-const uint8_t VENT_STATE_ON = 100;
-const uint8_t VENT_STATE_FADE_ONCE = 101;
-const uint8_t VENT_STATE_FADE_FREQUENTLY = 102;
 
 unsigned long ventFadeStartTime;
 unsigned long ventFadeEndTime;
@@ -176,36 +170,42 @@ uint32_t getColor(uint8_t zone, uint16_t pixelIndex) {
     uint16_t pixelOffset = getZoneOffset(zone) + pixelIndex;
     uint32_t color;
     
-    if (zone == ZONE_STUD_LEFT || zone == ZONE_STUD_RIGHT) {
-        color = neoPixelStripStud.getPixelColor(pixelOffset);
+    if (zone == ZONE_VENT_LEFT || zone == ZONE_STUD_LEFT) {
+        color = neoPixelStripVentLeft.getPixelColor(pixelOffset);
     }
-    else if (zone == ZONE_VENT_LEFT || zone == ZONE_VENT_RIGHT) {
-        color = neoPixelStripVent.getPixelColor(pixelOffset);
+    else if (zone == ZONE_VENT_RIGHT || zone == ZONE_STUD_RIGHT) {
+        color = neoPixelStripVentRight.getPixelColor(pixelOffset);
     }
-    else if (zone == ZONE_GRID) {
-        color = neoPixelStripGrid.getPixelColor(pixelOffset);
+    else if (zone == ZONE_SHOULDER_INNER_LEFT || zone == ZONE_SHOULDER_OUTER_LEFT) {
+        color = neoPixelStripShoulderLeft.getPixelColor(pixelOffset);
+    }
+    else if (zone == ZONE_SHOULDER_INNER_RIGHT || zone == ZONE_SHOULDER_OUTER_RIGHT) {
+        color = neoPixelStripShoulderRight.getPixelColor(pixelOffset);
     }
     else {
-        color = neoPixelStripShoulder.getPixelColor(pixelOffset);
+        color = neoPixelStripGrid.getPixelColor(pixelOffset);
     }
-    
+
     return color;
 }
 
 void setColor(uint8_t zone, uint16_t pixelIndex, uint32_t color) {
     uint16_t pixelOffset = getZoneOffset(zone) + pixelIndex;
     
-    if (zone == ZONE_STUD_LEFT || zone == ZONE_STUD_RIGHT) {
-        neoPixelStripStud.setPixelColor(pixelOffset, color);
+    if (zone == ZONE_VENT_LEFT || zone == ZONE_STUD_LEFT) {
+        neoPixelStripVentLeft.setPixelColor(pixelOffset, color);
     }
-    else if (zone == ZONE_VENT_LEFT || zone == ZONE_VENT_RIGHT) {
-        neoPixelStripVent.setPixelColor(pixelOffset, color);
+    else if (zone == ZONE_VENT_RIGHT || zone == ZONE_STUD_RIGHT) {
+        neoPixelStripVentRight.setPixelColor(pixelOffset, color);
     }
-    else if (zone == ZONE_GRID) {
-        neoPixelStripGrid.setPixelColor(pixelOffset, color);
+    else if (zone == ZONE_SHOULDER_INNER_LEFT || zone == ZONE_SHOULDER_OUTER_LEFT) {
+        neoPixelStripShoulderLeft.setPixelColor(pixelOffset, color);
+    }
+    else if (zone == ZONE_SHOULDER_INNER_RIGHT || zone == ZONE_SHOULDER_OUTER_RIGHT) {
+        neoPixelStripShoulderRight.setPixelColor(pixelOffset, color);
     }
     else {
-        neoPixelStripShoulder.setPixelColor(pixelOffset, color);
+        neoPixelStripGrid.setPixelColor(pixelOffset, color);
     }
 }
 
@@ -499,10 +499,11 @@ void initializeStuds() {
  */
 void setup() {
     //Serial.begin(9600);  // TODO: Find a faster baud?
-    neoPixelStripStud.begin();
-    neoPixelStripVent.begin();
+    neoPixelStripVentLeft.begin();
+    neoPixelStripVentRight.begin();
+    neoPixelStripShoulderLeft.begin();
+    neoPixelStripShoulderRight.begin();
     neoPixelStripGrid.begin();
-    neoPixelStripShoulder.begin();
 
     unsigned long currentFrameTime = millis();
     
@@ -513,10 +514,11 @@ void setup() {
     initializeGrid(currentFrameTime);
     initializeStuds();
 
-    neoPixelStripStud.show();
-    neoPixelStripVent.show();
+    neoPixelStripVentLeft.show();
+    neoPixelStripVentRight.show();
+    neoPixelStripShoulderLeft.show();
+    neoPixelStripShoulderRight.show();
     neoPixelStripGrid.show();
-    neoPixelStripShoulder.show();
 }
 
 /*
@@ -530,8 +532,9 @@ void loop() {
     animateGrid(currentFrameTime);
     // FYI, studs never change.
 
-    neoPixelStripStud.show();
-    neoPixelStripVent.show();
+    neoPixelStripVentLeft.show();
+    neoPixelStripVentRight.show();
+    neoPixelStripShoulderLeft.show();
+    neoPixelStripShoulderRight.show();
     neoPixelStripGrid.show();
-    neoPixelStripShoulder.show();
 }

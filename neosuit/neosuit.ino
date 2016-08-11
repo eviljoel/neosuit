@@ -23,7 +23,8 @@ const uint8_t PIN_STRIP_GRID = 5;
 const uint8_t PIN_STRIP_VENT = 3;
 const uint8_t PIN_STRIP_STUD = 9;
 
-const uint16_t PIXEL_COUNT_SHOULDER = 19;
+const uint16_t PIXEL_COUNT_SHOULDER_INNER = 13;
+const uint16_t PIXEL_COUNT_SHOULDER_OUTER = 19;
 const uint16_t PIXEL_COUNT_GRID = 20;
 const uint16_t PIXEL_COUNT_VENT = 18;
 const uint16_t PIXEL_COUNT_STUD = 4;
@@ -31,7 +32,7 @@ const uint16_t PIXEL_COUNT_STUD = 4;
 Adafruit_NeoPixel neoPixelStripStud = Adafruit_NeoPixel(PIXEL_COUNT_STUD, PIN_STRIP_STUD, NEO_RGB + NEO_KHZ800);
 Adafruit_NeoPixel neoPixelStripVent = Adafruit_NeoPixel(PIXEL_COUNT_VENT, PIN_STRIP_VENT, NEO_RGB + NEO_KHZ800);
 Adafruit_NeoPixel neoPixelStripGrid = Adafruit_NeoPixel(PIXEL_COUNT_GRID, PIN_STRIP_GRID, NEO_RGB + NEO_KHZ800);
-Adafruit_NeoPixel neoPixelStripShoulder = Adafruit_NeoPixel(PIXEL_COUNT_SHOULDER, PIN_STRIP_SHOULDER, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel neoPixelStripShoulder = Adafruit_NeoPixel(PIXEL_COUNT_SHOULDER_INNER + PIXEL_COUNT_SHOULDER_OUTER, PIN_STRIP_SHOULDER, NEO_GRB + NEO_KHZ800);
 
 // Base color (Pink for now. Originally r255, g061, b255 but divided by 8.)
 const uint8_t COLOR_BASE_RED = 32;
@@ -79,12 +80,14 @@ const uint8_t VENT_CYCLE_FREQUENTLY_COUNT = 8;
 
 const uint16_t INDEX_VENT_START = 0;  // 18 Pixels
 const uint16_t INDEX_STUD_START = 0;  // 4 Pixels
-const uint16_t INDEX_SHOULDER_START = 0;  // 19 Pixels
+const uint16_t INDEX_SHOULDER_INNER_START = 0;  // 13 Pixels
+const uint16_t INDEX_SHOULDER_OUTER_START = 13;  // 19 Pixels
 const uint16_t INDEX_GRID_START = 0;  // 20 Pixels
 
 const uint8_t ZONE_VENT = 2;
 const uint8_t ZONE_STUD = 4;
-const uint8_t ZONE_SHOULDER = 7;
+const uint8_t ZONE_SHOULDER_INNER = 6;
+const uint8_t ZONE_SHOULDER_OUTER = 7;
 const uint8_t ZONE_GRID = 10;
 
 const uint8_t VENT_STATE_ON = 100;
@@ -120,8 +123,11 @@ uint16_t getZoneOffset(uint8_t zone) {
     else if (zone == ZONE_STUD) {
         zoneOffset = INDEX_STUD_START;
     }
-    else if (zone == ZONE_SHOULDER) {
-        zoneOffset = INDEX_SHOULDER_START;
+    else if (zone == ZONE_SHOULDER_INNER) {
+        zoneOffset = INDEX_SHOULDER_INNER_START;
+    }
+    else if (zone == ZONE_SHOULDER_OUTER) {
+        zoneOffset = INDEX_SHOULDER_OUTER_START;
     }
     else if (zone == ZONE_GRID) {
         zoneOffset = INDEX_GRID_START;
@@ -233,16 +239,23 @@ void setVentsFade(double fadeAmount) {
     } 
 }
 
-/*
- * Animates either the shoulder LED strings.
- */
 void animateSholders(unsigned long currentFrameTime) {
+    // Animate inner strip
+    animateShouldersSubZone(ZONE_SHOULDER_INNER, currentFrameTime, PIXEL_COUNT_SHOULDER_INNER);
+    // Animate outer strip
+    animateShouldersSubZone(ZONE_SHOULDER_OUTER, currentFrameTime, PIXEL_COUNT_SHOULDER_OUTER);
+}
+
+/*
+ * Animates either the inner or outer shoulder LED string.
+ */
+void animateShouldersSubZone(uint8_t zone, unsigned long currentFrameTime, uint16_t pixelCount) {
 
     const double placeInCycle = (currentFrameTime % SHOULDER_CYCLE_TIME + 0.0) / SHOULDER_CYCLE_TIME * SHOULDER_LEAD_SEPARATION;
     const uint16_t firstFadedLight = uint16_t(placeInCycle);  
     const uint16_t secondFadedLight = uint16_t(placeInCycle + 1) % SHOULDER_LEAD_SEPARATION;
 
-    for (uint16_t pixelIndex = 0; pixelIndex < PIXEL_COUNT_SHOULDER; pixelIndex++) {
+    for (uint16_t pixelIndex = 0; pixelIndex < pixelCount; pixelIndex++) {
 
         const uint16_t pixelInCycle = pixelIndex % SHOULDER_LEAD_SEPARATION;
         const uint16_t firstPixelOfSeparation = pixelIndex / SHOULDER_LEAD_SEPARATION * SHOULDER_LEAD_SEPARATION;
@@ -251,14 +264,14 @@ void animateSholders(unsigned long currentFrameTime) {
         //   pixels.
         if (firstFadedLight + firstPixelOfSeparation == pixelIndex) {
             double amountOn = uint16_t(placeInCycle) + 1 - placeInCycle;
-            setFadedColor(ZONE_SHOULDER, pixelIndex, COLOR_BASE, amountOn);
+            setFadedColor(zone, pixelIndex, COLOR_BASE, amountOn);
         }
         else if (secondFadedLight + firstPixelOfSeparation == pixelIndex) {
             double amountOn = placeInCycle - uint16_t(placeInCycle);
-            setFadedColor(ZONE_SHOULDER, pixelIndex, COLOR_BASE, amountOn);
+            setFadedColor(zone, pixelIndex, COLOR_BASE, amountOn);
         }
         else {
-            setColor(ZONE_SHOULDER, pixelIndex, COLOR_BLACK);
+            setColor(zone, pixelIndex, COLOR_BLACK);
         }
     }
 }

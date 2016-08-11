@@ -167,6 +167,12 @@ uint8_t getBlueColor(uint32_t color) {
 }
 
 uint32_t getColor(uint8_t zone, uint16_t pixelIndex) {
+
+    // Due to how the inner shoulder is wired, invert the pixel index.
+    if (zone == ZONE_SHOULDER_INNER_RIGHT || zone == ZONE_SHOULDER_INNER_LEFT) {
+        pixelIndex = PIXEL_COUNT_SHOULDER_INNER - pixelIndex - 1;
+    }
+    
     uint16_t pixelOffset = getZoneOffset(zone) + pixelIndex;
     uint32_t color;
     
@@ -190,6 +196,12 @@ uint32_t getColor(uint8_t zone, uint16_t pixelIndex) {
 }
 
 void setColor(uint8_t zone, uint16_t pixelIndex, uint32_t color) {
+
+    // Due to how the inner shoulder is wired, invert the pixel index.
+    if (zone == ZONE_SHOULDER_INNER_RIGHT || zone == ZONE_SHOULDER_INNER_LEFT) {
+        pixelIndex = PIXEL_COUNT_SHOULDER_INNER - pixelIndex - 1;
+    }
+
     uint16_t pixelOffset = getZoneOffset(zone) + pixelIndex;
     
     if (zone == ZONE_VENT_LEFT || zone == ZONE_STUD_LEFT) {

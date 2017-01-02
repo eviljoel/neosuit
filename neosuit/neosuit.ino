@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <Adafruit_NeoPixel.h>
 
 const uint8_t PIN_STRIP_SHOULDER_LEFT = 6;
-const uint8_t PIN_STRIP_SHOULDER_RIGHT = 11;
+const uint8_t PIN_STRIP_SHOULDER_RIGHT = 3;
 const uint8_t PIN_STRIP_GRID = 9;
 const uint8_t PIN_STRIP_VENT_LEFT = 5;
 const uint8_t PIN_STRIP_VENT_RIGHT = 10;
